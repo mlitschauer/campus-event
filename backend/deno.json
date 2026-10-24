@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --watch main.ts",
+    "check": "deno check main.ts"
+  },
+  "imports": {
+    "hono": "npm:hono@^4.13.13"
+  }
+}
