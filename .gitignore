@@ -1,0 +1,24 @@
+# Node.js / Frontend
+node_modules/
+dist/
+coverage/
+
+# Umgebungsvariablen und Secrets
+.env
+.env.*
+!.env.example
+
+# Lokale SQLite-Datenbanken
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
