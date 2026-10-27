@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: campus-event-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: campus_event
+      POSTGRES_USER: campus_event
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+      - campus_event_pgdata:/var/lib/postgresql
+      - ./backend/db/migrations:/migrations:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campus_event -d campus_event"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  campus_event_pgdata:
