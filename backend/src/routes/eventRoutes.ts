@@ -5,48 +5,68 @@ import {
   getPublishedEventById,
 } from '../services/eventService.ts'
 
-// Einfacher UUID-Formatcheck
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import {
+  eventQuerySchema,
+  eventIdSchema,
+} from '../schemas/eventSchema.ts'
+
+import { apiError } from '../utils/apiError.ts'
 
 export function registerEventRoutes(app: Hono): void {
 
   // GET /api/events
   app.get('/api/events', async (c) => {
-    const events = await getPublishedEvents()
+
+    // Query-Parameter auslesen und validieren
+    const result = eventQuerySchema.safeParse(c.req.query())
+
+    if (!result.success) {
+      return c.json(
+        apiError(
+          'VALIDATION_ERROR',
+          'Ungültige Anfrageparameter.',
+          result.error.issues.map((issue) => ({
+            field: issue.path.join('.') || 'query',
+            message: issue.message,
+          })),
+        ),
+        400,
+      )
+    }
+
+    // Validierte Filter an den Service übergeben
+    const events = await getPublishedEvents(result.data)
 
     return c.json(events, 200)
   })
 
   // GET /api/events/:id
   app.get('/api/events/:id', async (c) => {
-    const id = c.req.param('id')
 
-    // ID auf gültiges UUID-Format prüfen
-    if (!UUID_REGEX.test(id)) {
+    const result = eventIdSchema.safeParse(c.req.param('id'))
+
+    if (!result.success) {
       return c.json(
-        {
-          error: {
-            code: 'INVALID_EVENT_ID',
-            message: 'Die Event-ID muss eine gültige UUID sein.',
-          },
-        },
+        apiError(
+          'VALIDATION_ERROR',
+          'Die Event-ID muss eine gültige UUID sein.',
+          [{
+            field: 'id',
+            message: 'Ungültiges UUID-Format.',
+          }],
+        ),
         400,
       )
     }
 
-    // Event über Service abrufen
-    const event = await getPublishedEventById(id)
+    const event = await getPublishedEventById(result.data)
 
-    // Event existiert nicht oder ist nicht veröffentlicht
     if (!event) {
       return c.json(
-        {
-          error: {
-            code: 'EVENT_NOT_FOUND',
-            message: 'Veranstaltung nicht gefunden.',
-          },
-        },
+        apiError(
+          'EVENT_NOT_FOUND',
+          'Veranstaltung nicht gefunden.',
+        ),
         404,
       )
     }

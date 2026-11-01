@@ -3,14 +3,17 @@ import {
   findPublishedEventById,
 } from '../repositories/eventRepository.ts'
 
-import type { CampusEvent } from '../types/event.ts'
+import type {
+  CampusEvent,
+  EventFilters,
+} from '../types/event.ts'
 
-// Alle veröffentlichten Events laden
-export async function getPublishedEvents(): Promise<CampusEvent[]> {
-  return await findPublishedEvents()
+export async function getPublishedEvents(
+  filters: EventFilters = {},
+): Promise<CampusEvent[]> {
+  return await findPublishedEvents(filters)
 }
 
-// Ein veröffentlichtes Event anhand der ID laden
 export async function getPublishedEventById(
   id: string,
 ): Promise<CampusEvent | null> {

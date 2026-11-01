@@ -1,12 +1,14 @@
 {
   "tasks": {
   "dev": "deno run --env-file=.env --allow-env --allow-net --watch main.ts",
-  "check": "deno check main.ts src/db/check.ts src/db/testRepositories.ts",
+  "check": "deno check main.ts src/db/check.ts src/db/testRepositories.ts tests/events.test.ts",
   "db:check": "deno run --env-file=.env --allow-env --allow-net src/db/check.ts",
-  "db:repositories": "deno run --env-file=.env --allow-env --allow-net src/db/testRepositories.ts"
+  "db:repositories": "deno run --env-file=.env --allow-env --allow-net src/db/testRepositories.ts",
+  "test:api": "deno test --env-file=.env --allow-env --allow-net tests/events.test.ts"
 },
   "imports": {
     "hono": "npm:hono@^4.13.13",
-    "postgres": "npm:postgres@^3.4.9"
+    "postgres": "npm:postgres@^3.4.9",
+    "zod": "npm:zod@^4.6.7"
   }
 }

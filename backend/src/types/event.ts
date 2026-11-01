@@ -26,3 +26,8 @@ export interface CampusEvent {
     slug: string
   }
 }
+
+export interface EventFilters {
+  category?: string
+  search?: string
+}

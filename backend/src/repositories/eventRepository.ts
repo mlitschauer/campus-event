@@ -3,6 +3,7 @@ import { sql } from '../db/client.ts'
 import type {
   CampusEvent,
   EventStatus,
+  EventFilters,
 } from '../types/event.ts'
 
 // Interne Struktur einer SQL-Ergebniszeile
@@ -54,7 +55,10 @@ function mapEvent(row: EventRow): CampusEvent {
 }
 
 // Alle veröffentlichten Veranstaltungen abrufen
-export async function findPublishedEvents(): Promise<CampusEvent[]> {
+export async function findPublishedEvents(
+  filters: EventFilters = {},
+): Promise<CampusEvent[]> {
+
   const rows = await sql<EventRow[]>`
     SELECT
       e.id,
@@ -82,6 +86,22 @@ export async function findPublishedEvents(): Promise<CampusEvent[]> {
       ON e.category_id = c.id
 
     WHERE e.status = 'published'
+
+    ${filters.category
+      ? sql`AND c.slug = ${filters.category}`
+      : sql``
+    }
+
+    ${filters.search
+      ? sql`
+        AND (
+          POSITION(LOWER(${filters.search}) IN LOWER(e.title)) > 0
+          OR POSITION(LOWER(${filters.search}) IN LOWER(e.description)) > 0
+          OR POSITION(LOWER(${filters.search}) IN LOWER(e.location)) > 0
+        )
+      `
+      : sql``
+    }
 
     ORDER BY e.starts_at ASC
   `
