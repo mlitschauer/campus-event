@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import ApiStatus from './components/ApiStatus.vue'
+import AppHeader from './components/layout/AppHeader.vue'
+import AppFooter from './components/layout/AppFooter.vue'
 </script>
 
 <template>
-  <main class="app">
-    <h1>CampusEvent</h1>
-    <p>Deine Plattform für Campus-Veranstaltungen.</p>
+  <div class="app-shell">
 
-    <ApiStatus />
-  </main>
+    <AppHeader />
+
+    <main class="main-content">
+      <RouterView />
+    </main>
+
+    <AppFooter />
+
+  </div>
 </template>
-
-<style scoped>
-.app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 24px;
-}
-</style>
