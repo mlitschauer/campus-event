@@ -1,8 +1,15 @@
+<script setup lang="ts">
+import ApiDataCheck from '../components/ApiDataCheck.vue'
+
+const showApiDebug = import.meta.env.DEV
+</script>
+
 <template>
   <div class="page-content">
 
     <section class="page-heading">
       <p class="eyebrow">ENTDECKEN</p>
+
       <h1>Veranstaltungen</h1>
 
       <p class="lead">
@@ -15,23 +22,13 @@
       <h2>Eventübersicht</h2>
 
       <p>
-        Hier werden wir in CE-12 und CE-13
-        die Veranstaltungen aus unserer REST-API
-        als Eventkarten darstellen.
+        In CE-13 stellen wir hier unsere Veranstaltungen
+        als Eventkarten dar.
       </p>
-
-      <RouterLink
-        :to="{
-          name: 'event-detail',
-          params: {
-            id: '00000000-0000-4000-8000-000000000101'
-          }
-        }"
-        class="text-link"
-      >
-        Demo: Eventdetailseite testen →
-      </RouterLink>
     </section>
+
+    <!-- API-Diagnose nur in der Entwicklung -->
+    <ApiDataCheck v-if="showApiDebug" />
 
   </div>
 </template>
