@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { registerEventRoutes } from './routes/eventRoutes.ts'
 import { registerCategoryRoutes } from './routes/categoryRoutes.ts'
 import { apiError } from './utils/apiError.ts'
+import { registerAuthRoutes } from './routes/authRoutes.ts'
 
 // Hono-Anwendung erstellen
 export const app = new Hono()
@@ -18,6 +19,9 @@ app.get('/api/health', (c) => {
 // REST-Routen registrieren
 registerEventRoutes(app)
 registerCategoryRoutes(app)
+registerEventRoutes(app)
+registerCategoryRoutes(app)
+registerAuthRoutes(app)
 
 // Einheitliche Antwort bei unbekannter Route
 app.notFound((c) => {
