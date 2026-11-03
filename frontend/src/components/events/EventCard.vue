@@ -257,6 +257,7 @@ const formattedTime = computed(() => {
   font-size: 14px;
   line-height: 1.6;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
 }
 

@@ -1,44 +1,165 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue'
 
 import EventCard from '../components/events/EventCard.vue'
+import EventFilters from '../components/events/EventFilters.vue'
 
 import { getEvents } from '../services/eventService'
+import { getCategories } from '../services/categoryService'
 import { ApiError } from '../services/api'
 
-import type { CampusEvent } from '../types/event'
+import type {
+  CampusEvent,
+  EventFilters as EventFilterParams,
+} from '../types/event'
 
-// Reaktiver Zustand
+import type { Category } from '../types/category'
+
+// Veranstaltungsdaten
 const events = ref<CampusEvent[]>([])
+const categories = ref<Category[]>([])
+
+// Filterzustand
+const searchTerm = ref('')
+const selectedCategory = ref('')
+
+// Lade- und Fehlerzustand
 const loading = ref(true)
 const errorMessage = ref('')
+const categoriesError = ref('')
 
-// Veranstaltungen aus der REST-API laden
-async function loadEvents(): Promise<void> {
-  loading.value = true
-  errorMessage.value = ''
+// Sind aktuell Filter aktiv?
+const hasActiveFilters = computed(() => {
+  return Boolean(
+    searchTerm.value.trim() ||
+    selectedCategory.value
+  )
+})
 
+// Steuerung der Suchverzögerung
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+// Verhindert, dass ältere API-Antworten neue überschreiben
+let requestId = 0
+
+// Kategorien laden
+async function loadCategories(): Promise<void> {
   try {
-    const result = await getEvents()
-    events.value = result
-
-  } catch (error) {
-    events.value = []
-
-    if (error instanceof ApiError) {
-      errorMessage.value = error.message
-    } else {
-      errorMessage.value =
-        'Die Veranstaltungen konnten nicht geladen werden.'
-    }
-  } finally {
-    loading.value = false
+    categories.value = await getCategories()
+    categoriesError.value = ''
+  } catch {
+    categoriesError.value =
+      'Kategorien konnten nicht geladen werden.'
   }
 }
 
-// Daten beim Aufrufen der Seite laden
+// Veranstaltungen mit aktuellen Filtern laden
+async function loadEvents(id: number): Promise<void> {
+  const filters: EventFilterParams = {}
+
+  if (selectedCategory.value) {
+    filters.category = selectedCategory.value
+  }
+
+  const search = searchTerm.value.trim()
+
+  if (search) {
+    filters.search = search
+  }
+
+  try {
+    const result = await getEvents(filters)
+
+    // Veraltete Antworten nicht übernehmen
+    if (id !== requestId) return
+
+    events.value = result
+
+  } catch (error) {
+    if (id !== requestId) return
+
+    events.value = []
+
+    errorMessage.value =
+      error instanceof ApiError
+        ? error.message
+        : 'Veranstaltungen konnten nicht geladen werden.'
+
+  } finally {
+    if (id === requestId) {
+      loading.value = false
+    }
+  }
+}
+
+// API-Anfrage planen
+function scheduleLoad(delay = 0): void {
+  // Vorherige Anfrage ungültig machen
+  requestId++
+
+  if (debounceTimer !== null) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
+
+  const currentRequest = requestId
+
+  loading.value = true
+  errorMessage.value = ''
+
+  if (delay === 0) {
+    void loadEvents(currentRequest)
+    return
+  }
+
+  debounceTimer = setTimeout(() => {
+    debounceTimer = null
+    void loadEvents(currentRequest)
+  }, delay)
+}
+
+// Bei Filteränderungen neu laden
+watch(
+  [searchTerm, selectedCategory],
+  ([, newCategory], [, oldCategory]) => {
+
+    // Kategorie sofort, Suche verzögert
+    const delay = newCategory !== oldCategory ? 0 : 350
+
+    scheduleLoad(delay)
+  }
+)
+
+// Filter zurücksetzen
+function resetFilters(): void {
+  searchTerm.value = ''
+  selectedCategory.value = ''
+}
+
+// Erneut laden
+function retryLoad(): void {
+  scheduleLoad(0)
+}
+
+// Initialisierung
 onMounted(() => {
-  void loadEvents()
+  void loadCategories()
+  scheduleLoad(0)
+})
+
+// Aufräumen beim Verlassen der Seite
+onUnmounted(() => {
+  requestId++
+
+  if (debounceTimer !== null) {
+    clearTimeout(debounceTimer)
+  }
 })
 </script>
 
@@ -57,22 +178,23 @@ onMounted(() => {
       </p>
     </section>
 
+    <!-- Such- und Filterbereich -->
+    <EventFilters v-model:search="searchTerm" v-model:category="selectedCategory" :categories="categories"
+      @reset="resetFilters" />
+
+    <!-- Fehler beim Laden der Kategorien -->
+    <p v-if="categoriesError" class="categories-error" role="status">
+      {{ categoriesError }}
+    </p>
+
     <!-- Ladezustand -->
-    <section
-      v-if="loading"
-      aria-busy="true"
-      aria-label="Veranstaltungen werden geladen"
-    >
+    <section v-if="loading" aria-busy="true" aria-label="Veranstaltungen werden geladen">
       <p class="loading-message" role="status">
         Veranstaltungen werden geladen ...
       </p>
 
       <div class="events-grid" aria-hidden="true">
-        <div
-          v-for="index in 6"
-          :key="index"
-          class="event-skeleton"
-        >
+        <div v-for="index in 6" :key="index" class="event-skeleton">
           <div class="skeleton-visual"></div>
 
           <div class="skeleton-content">
@@ -86,57 +208,60 @@ onMounted(() => {
     </section>
 
     <!-- Fehlerzustand -->
-    <section
-      v-else-if="errorMessage"
-      class="state-panel"
-      role="alert"
-    >
+    <section v-else-if="errorMessage" class="state-panel" role="alert">
       <span class="state-icon" aria-hidden="true">⚠️</span>
 
       <h2>Veranstaltungen nicht verfügbar</h2>
 
       <p>{{ errorMessage }}</p>
 
-      <button
-        type="button"
-        class="button button-primary"
-        @click="loadEvents"
-      >
+      <button type="button" class="button button-primary" @click="retryLoad">
         Erneut versuchen
       </button>
     </section>
 
-    <!-- Leere Ergebnisliste -->
-    <section
-      v-else-if="events.length === 0"
-      class="state-panel"
-    >
-      <span class="state-icon" aria-hidden="true">📅</span>
+    <!-- Keine passenden Veranstaltungen -->
+    <section v-else-if="events.length === 0" class="state-panel">
+      <span class="state-icon" aria-hidden="true">🔎</span>
 
-      <h2>Aktuell keine Veranstaltungen</h2>
+      <h2>
+        {{ hasActiveFilters
+          ? 'Keine passenden Veranstaltungen'
+          : 'Aktuell keine Veranstaltungen' }}
+      </h2>
 
-      <p>
+      <p v-if="hasActiveFilters">
+        Für deine Suche konnten keine passenden
+        Veranstaltungen gefunden werden.
+        Versuche andere Suchbegriffe oder Kategorien.
+      </p>
+
+      <p v-else>
         Momentan sind keine veröffentlichten
-        Veranstaltungen vorhanden.
+        Veranstaltungen verfügbar.
         Schau später wieder vorbei.
       </p>
 
-      <button
-        type="button"
-        class="button button-secondary"
-        @click="loadEvents"
-      >
+      <button v-if="hasActiveFilters" type="button" class="button button-primary" @click="resetFilters">
+        Filter zurücksetzen
+      </button>
+
+      <button v-else type="button" class="button button-secondary" @click="retryLoad">
         Aktualisieren
       </button>
     </section>
 
-    <!-- Erfolgreich geladene Veranstaltungen -->
+    <!-- Eventübersicht -->
     <section v-else aria-label="Veranstaltungsliste">
 
       <div class="events-list-header">
-        <h2>Alle Veranstaltungen</h2>
+        <h2>
+          {{ hasActiveFilters
+            ? 'Suchergebnisse'
+            : 'Alle Veranstaltungen' }}
+        </h2>
 
-        <span class="event-count">
+        <span class="event-count" role="status">
           {{ events.length }}
           {{ events.length === 1
             ? 'Veranstaltung'
@@ -145,11 +270,7 @@ onMounted(() => {
       </div>
 
       <div class="events-grid">
-        <EventCard
-          v-for="event in events"
-          :key="event.id"
-          :event="event"
-        />
+        <EventCard v-for="event in events" :key="event.id" :event="event" />
       </div>
 
     </section>
@@ -254,12 +375,10 @@ onMounted(() => {
   height: 14px;
   width: 100%;
   border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    #e2e8f0 25%,
-    #f1f5f9 50%,
-    #e2e8f0 75%
-  );
+  background: linear-gradient(90deg,
+      #e2e8f0 25%,
+      #f1f5f9 50%,
+      #e2e8f0 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
 }
