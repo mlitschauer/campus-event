@@ -1,5 +1,7 @@
 import type { Context, Hono } from 'hono'
 
+import { requireAuth } from '../middleware/authMiddleware.ts'
+
 import {
   getCookie,
   setCookie,
@@ -17,7 +19,6 @@ import {
 } from '../services/authService.ts'
 
 import {
-  getActiveSession,
   revokeSession,
 } from '../services/sessionService.ts'
 
@@ -240,38 +241,19 @@ export function registerAuthRoutes(app: Hono): void {
   })
 
   // ---------------------------------
-  // GET /api/auth/me
-  // ---------------------------------
-  app.get('/api/auth/me', async (c) => {
-
-    const token = getCookie(c, COOKIE_NAME)
-
-    if (!token) {
-      return c.json(
-        apiError(
-          'UNAUTHORIZED',
-          'Nicht angemeldet.',
-        ),
-        401,
-      )
-    }
-
-    const session = await getActiveSession(token)
-
-    if (!session) {
-      return c.json(
-        apiError(
-          'UNAUTHORIZED',
-          'Session ungültig oder abgelaufen.',
-        ),
-        401,
-      )
-    }
+// GET /api/auth/me
+// ---------------------------------
+app.get(
+  '/api/auth/me',
+  requireAuth,
+  (c) => {
+    const user = c.get('authUser')
 
     return c.json({
-      user: session.user,
+      user,
     }, 200)
-  })
+  },
+)
 
   // ---------------------------------
   // POST /api/auth/logout
