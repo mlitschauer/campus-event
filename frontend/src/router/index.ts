@@ -4,6 +4,8 @@ import {
   type RouteRecordRaw,
 } from 'vue-router'
 
+import { useAuth } from '../composables/useAuth'
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -31,6 +33,21 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Anmelden' },
   },
   {
+    path: '/register',
+    name: 'register',
+    component: () => import('../views/RegisterView.vue'),
+    meta: { title: 'Registrieren' },
+  },
+  {
+    path: '/account',
+    name: 'account',
+    component: () => import('../views/AccountView.vue'),
+    meta: {
+      title: 'Mein Konto',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('../views/NotFoundView.vue'),
@@ -47,6 +64,30 @@ const router = createRouter({
   },
 })
 
+// Geschützte Routen überprüfen
+router.beforeEach(async (to) => {
+  if (!to.meta.requiresAuth) {
+    return true
+  }
+
+  const auth = useAuth()
+
+  // Session aus dem Cookie wiederherstellen
+  await auth.initializeAuth()
+
+  if (!auth.isAuthenticated.value) {
+    return {
+      name: 'login',
+      query: {
+        redirect: to.fullPath,
+      },
+    }
+  }
+
+  return true
+})
+
+// Browser-Titel aktualisieren
 router.afterEach((to) => {
   const title = String(to.meta.title ?? 'CampusEvent')
   document.title = `${title} | CampusEvent`
