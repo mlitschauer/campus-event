@@ -265,3 +265,47 @@ export async function deleteDraftEvent(
 
   return rows.length > 0
 }
+
+// Eigenen Entwurf veröffentlichen
+export async function publishDraftEvent(
+  eventId: string,
+  organizerId: string,
+): Promise<boolean> {
+  const rows = await sql<{ id: string }[]>`
+    UPDATE events
+    SET
+      status = 'published',
+      updated_at = NOW()
+
+    WHERE id = ${eventId}::uuid
+      AND organizer_id = ${organizerId}::uuid
+      AND status = 'draft'
+      AND starts_at > NOW()
+      AND ends_at > starts_at
+
+    RETURNING id
+  `
+
+  return rows.length === 1
+}
+
+// Eigene veröffentlichte Veranstaltung absagen
+export async function cancelPublishedEvent(
+  eventId: string,
+  organizerId: string,
+): Promise<boolean> {
+  const rows = await sql<{ id: string }[]>`
+    UPDATE events
+    SET
+      status = 'cancelled',
+      updated_at = NOW()
+
+    WHERE id = ${eventId}::uuid
+      AND organizer_id = ${organizerId}::uuid
+      AND status = 'published'
+
+    RETURNING id
+  `
+
+  return rows.length === 1
+}

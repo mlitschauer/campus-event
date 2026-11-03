@@ -15,13 +15,15 @@ import {
 
 import {
   createEventSchema,
-  updateEventSchema,
+  updateEventSchema
 } from '../schemas/eventManagementSchema.ts'
 
 import {
   createManagedEvent,
   updateManagedEvent,
   removeManagedEvent,
+  publishManagedEvent,
+  cancelManagedEvent,
 } from '../services/eventManagementService.ts'
 
 import { apiError } from '../utils/apiError.ts'
@@ -288,4 +290,154 @@ export function registerEventManagementRoutes(
       return c.body(null, 204)
     },
   )
+
+  // ---------------------------------
+// POST /api/events/:id/publish
+// ---------------------------------
+app.post(
+  '/api/events/:id/publish',
+  requireAuth,
+  requireRole('organizer'),
+  requireTrustedOrigin,
+  async (c) => {
+
+    // UUID überprüfen
+    const idResult = z.uuid().safeParse(
+      c.req.param('id'),
+    )
+
+    if (!idResult.success) {
+      return c.json(
+        apiError(
+          'VALIDATION_ERROR',
+          'Ungültige Event-ID.',
+        ),
+        400,
+      )
+    }
+
+    // Authentifizierten Organizer abrufen
+    const organizerId = c.get('authUser').id
+
+    // Veröffentlichung durchführen
+    const result = await publishManagedEvent(
+      idResult.data,
+      organizerId,
+    )
+
+    if (result.kind === 'not-found') {
+      return c.json(
+        apiError(
+          'EVENT_NOT_FOUND',
+          'Veranstaltung nicht gefunden.',
+        ),
+        404,
+      )
+    }
+
+    if (result.kind === 'invalid-status') {
+      return c.json(
+        apiError(
+          'INVALID_EVENT_STATUS',
+          'Nur Entwürfe können veröffentlicht werden.',
+        ),
+        409,
+      )
+    }
+
+    if (result.kind === 'event-started') {
+      return c.json(
+        apiError(
+          'EVENT_START_PASSED',
+          'Veranstaltungsbeginn muss in der Zukunft liegen.',
+        ),
+        409,
+      )
+    }
+
+    if (result.kind === 'conflict') {
+      return c.json(
+        apiError(
+          'EVENT_STATUS_CONFLICT',
+          'Der Veranstaltungsstatus hat sich geändert.',
+        ),
+        409,
+      )
+    }
+
+    return c.json({
+      event: result.event,
+    }, 200)
+  },
+)
+
+// ---------------------------------
+// POST /api/events/:id/cancel
+// ---------------------------------
+app.post(
+  '/api/events/:id/cancel',
+  requireAuth,
+  requireRole('organizer'),
+  requireTrustedOrigin,
+  async (c) => {
+
+    // UUID überprüfen
+    const idResult = z.uuid().safeParse(
+      c.req.param('id'),
+    )
+
+    if (!idResult.success) {
+      return c.json(
+        apiError(
+          'VALIDATION_ERROR',
+          'Ungültige Event-ID.',
+        ),
+        400,
+      )
+    }
+
+    // Authentifizierten Organizer abrufen
+    const organizerId = c.get('authUser').id
+
+    // Absage durchführen
+    const result = await cancelManagedEvent(
+      idResult.data,
+      organizerId,
+    )
+
+    if (result.kind === 'not-found') {
+      return c.json(
+        apiError(
+          'EVENT_NOT_FOUND',
+          'Veranstaltung nicht gefunden.',
+        ),
+        404,
+      )
+    }
+
+    if (result.kind === 'invalid-status') {
+      return c.json(
+        apiError(
+          'INVALID_EVENT_STATUS',
+          'Nur veröffentlichte Veranstaltungen können abgesagt werden.',
+        ),
+        409,
+      )
+    }
+
+    if (result.kind !== 'success') {
+  return c.json(
+    apiError(
+      'EVENT_STATUS_CONFLICT',
+      'Der Veranstaltungsstatus hat sich geändert.',
+    ),
+    409,
+  )
+}
+
+return c.json({
+  event: result.event,
+}, 200)
+  },
+)
 }

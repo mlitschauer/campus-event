@@ -4,6 +4,8 @@ import {
   insertDraftEvent,
   updateDraftEvent,
   deleteDraftEvent,
+  publishDraftEvent,
+  cancelPublishedEvent,
 } from '../repositories/eventManagementRepository.ts'
 
 import type {
@@ -21,6 +23,13 @@ export type EventMutationResult =
   | { kind: 'not-found' }
   | { kind: 'invalid-category' }
   | { kind: 'invalid-dates' }
+  | { kind: 'conflict' }
+
+export type EventStatusResult =
+  | { kind: 'success'; event: ManagedEvent }
+  | { kind: 'not-found' }
+  | { kind: 'invalid-status' }
+  | { kind: 'event-started' }
   | { kind: 'conflict' }
 
 // Entwurf erstellen
@@ -158,4 +167,110 @@ export async function removeManagedEvent(
   }
 
   return { kind: 'deleted' }
+}
+
+// Eigenen Entwurf veröffentlichen
+export async function publishManagedEvent(
+  eventId: string,
+  organizerId: string,
+): Promise<EventStatusResult> {
+
+  // Veranstaltung mit Eigentümerprüfung laden
+  const existing = await findOwnedEventById(
+    eventId,
+    organizerId,
+  )
+
+  if (!existing) {
+    return { kind: 'not-found' }
+  }
+
+  // Nur Entwürfe dürfen veröffentlicht werden
+  if (existing.status !== 'draft') {
+    return { kind: 'invalid-status' }
+  }
+
+  // Veranstaltungsbeginn muss in der Zukunft liegen
+  if (
+    new Date(existing.startsAt).getTime() <= Date.now()
+  ) {
+    return { kind: 'event-started' }
+  }
+
+  // Atomare Statusänderung mit erneuter
+  // Eigentümer- und Statusprüfung in PostgreSQL
+  const published = await publishDraftEvent(
+    eventId,
+    organizerId,
+  )
+
+  if (!published) {
+    return { kind: 'conflict' }
+  }
+
+  // Aktualisierte Veranstaltung abrufen
+  const event = await findOwnedEventById(
+    eventId,
+    organizerId,
+  )
+
+  if (!event) {
+    throw new Error(
+      'Veröffentlichtes Event konnte nicht geladen werden.',
+    )
+  }
+
+  return {
+    kind: 'success',
+    event,
+  }
+}
+
+// Eigene veröffentlichte Veranstaltung absagen
+export async function cancelManagedEvent(
+  eventId: string,
+  organizerId: string,
+): Promise<EventStatusResult> {
+
+  // Veranstaltung mit Eigentümerprüfung laden
+  const existing = await findOwnedEventById(
+    eventId,
+    organizerId,
+  )
+
+  if (!existing) {
+    return { kind: 'not-found' }
+  }
+
+  // Nur veröffentlichte Events dürfen abgesagt werden
+  if (existing.status !== 'published') {
+    return { kind: 'invalid-status' }
+  }
+
+  // Atomare Statusänderung
+  const cancelled = await cancelPublishedEvent(
+    eventId,
+    organizerId,
+  )
+
+  if (!cancelled) {
+    return { kind: 'conflict' }
+  }
+
+  // Aktualisierte Veranstaltung abrufen
+  const event = await findOwnedEventById(
+    eventId,
+    organizerId,
+  )
+
+  if (!event) {
+    throw new Error(
+      'Abgesagtes Event konnte nicht geladen werden.',
+    )
+  }
+
+  return {
+    kind: 'success',
+    event,
+  }
 }
