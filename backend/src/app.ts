@@ -4,6 +4,9 @@ import { registerEventRoutes } from './routes/eventRoutes.ts'
 import { registerCategoryRoutes } from './routes/categoryRoutes.ts'
 import { apiError } from './utils/apiError.ts'
 import { registerAuthRoutes } from './routes/authRoutes.ts'
+import {
+  registerEventManagementRoutes,
+} from './routes/eventManagementRoutes.ts'
 
 // Hono-Anwendung erstellen
 export const app = new Hono()
@@ -22,6 +25,10 @@ registerCategoryRoutes(app)
 registerEventRoutes(app)
 registerCategoryRoutes(app)
 registerAuthRoutes(app)
+registerEventRoutes(app)
+registerCategoryRoutes(app)
+registerAuthRoutes(app)
+registerEventManagementRoutes(app)
 
 // Einheitliche Antwort bei unbekannter Route
 app.notFound((c) => {

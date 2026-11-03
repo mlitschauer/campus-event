@@ -1,13 +1,14 @@
 {
   "tasks": {
   "dev": "deno run --env-file=.env --allow-env --allow-net --watch main.ts",
-  "check": "deno check main.ts src/db/check.ts src/db/testRepositories.ts tests/events.test.ts tests/auth.test.ts tests/authRoutes.test.ts tests/authorization.test.ts",
+  "check": "deno check main.ts src/db/check.ts src/db/testRepositories.ts tests/events.test.ts tests/auth.test.ts tests/authRoutes.test.ts tests/authorization.test.ts tests/eventManagement.test.ts",
   "db:check": "deno run --env-file=.env --allow-env --allow-net src/db/check.ts",
   "db:repositories": "deno run --env-file=.env --allow-env --allow-net src/db/testRepositories.ts",
   "test:api": "deno test --env-file=.env --allow-env --allow-net tests/events.test.ts",
   "test:auth": "deno test --env-file=.env --allow-env --allow-net tests/auth.test.ts",
   "test:auth:routes": "deno test --env-file=.env --allow-env --allow-net tests/authRoutes.test.ts",
-  "test:authorization": "deno test --env-file=.env --allow-env --allow-net tests/authorization.test.ts"
+  "test:authorization": "deno test --env-file=.env --allow-env --allow-net tests/authorization.test.ts",
+  "test:events:write": "deno test --env-file=.env --allow-env --allow-net tests/eventManagement.test.ts"
 },
   "imports": {
     "hono": "npm:hono@^4.13.13",
