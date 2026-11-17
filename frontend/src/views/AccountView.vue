@@ -76,5 +76,8 @@ const roleLabel = computed(() => {
       Meine Veranstaltungen verwalten
     </RouterLink>
 
+    <RouterLink v-if="user?.role === 'student'" :to="{ name: 'my-registrations' }" class="button button-primary">
+      Meine Eventanmeldungen ansehen
+    </RouterLink>
   </div>
 </template>

@@ -83,12 +83,16 @@ async function handleLogout(): Promise<void> {
           Veranstaltungen
         </RouterLink>
 
-        <RouterLink v-if="user" to="/account" class="nav-link">
-          Mein Konto
+        <RouterLink v-if="user?.role === 'student'" :to="{ name: 'my-registrations' }" class="nav-link">
+          Meine Anmeldungen
         </RouterLink>
-
+        
         <RouterLink v-if="user?.role === 'organizer'" to="/organizer" class="nav-link">
           Veranstalterbereich
+        </RouterLink>
+
+        <RouterLink v-if="user" to="/account" class="nav-link">
+          Mein Konto
         </RouterLink>
       </nav>
 

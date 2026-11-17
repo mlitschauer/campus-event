@@ -68,31 +68,45 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-  path: '/organizer/events/new',
-  name: 'organizer-event-new',
+    path: '/organizer/events/new',
+    name: 'organizer-event-new',
 
-  component: () =>
-    import('../views/OrganizerEventFormView.vue'),
+    component: () =>
+      import('../views/OrganizerEventFormView.vue'),
 
-  meta: {
-    title: 'Neue Veranstaltung',
-    requiresAuth: true,
-    requiresRole: 'organizer',
+    meta: {
+      title: 'Neue Veranstaltung',
+      requiresAuth: true,
+      requiresRole: 'organizer',
+    },
   },
-},
-{
-  path: '/organizer/events/:id/edit',
-  name: 'organizer-event-edit',
+  {
+    path: '/organizer/events/:id/edit',
+    name: 'organizer-event-edit',
 
-  component: () =>
-    import('../views/OrganizerEventFormView.vue'),
+    component: () =>
+      import('../views/OrganizerEventFormView.vue'),
 
-  meta: {
-    title: 'Veranstaltung bearbeiten',
-    requiresAuth: true,
-    requiresRole: 'organizer',
+    meta: {
+      title: 'Veranstaltung bearbeiten',
+      requiresAuth: true,
+      requiresRole: 'organizer',
+    },
   },
-},
+
+  {
+    path: '/my-registrations',
+    name: 'my-registrations',
+
+    component: () =>
+      import('../views/MyRegistrationsView.vue'),
+
+    meta: {
+      title: 'Meine Anmeldungen',
+      requiresAuth: true,
+      requiresRole: 'student',
+    },
+  },
 ]
 
 const router = createRouter({
@@ -126,10 +140,11 @@ router.beforeEach(async (to) => {
     }
   }
 
-  // Organizer-Routen benötigen zusätzlich die Rolle
+  const requiredRole = to.meta.requiresRole
+
   if (
-    to.meta.requiresRole === 'organizer' &&
-    auth.user.value?.role !== 'organizer'
+    typeof requiredRole === 'string' &&
+    auth.user.value?.role !== requiredRole
   ) {
     return {
       name: 'account',

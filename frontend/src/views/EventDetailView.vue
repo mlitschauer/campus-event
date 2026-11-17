@@ -11,6 +11,9 @@ import { ApiError } from '../services/api'
 
 import type { CampusEvent } from '../types/event'
 
+import EventRegistrationPanel from
+  '../components/events/EventRegistrationPanel.vue'
+
 // Die Event-ID wird über Vue Router übergeben
 const props = defineProps<{
   id: string
@@ -170,20 +173,13 @@ const endTime = computed(() =>
     </nav>
 
     <!-- LADEZUSTAND -->
-    <section
-      v-if="status === 'loading'"
-      class="detail-loading"
-      aria-busy="true"
-      aria-label="Veranstaltung wird geladen"
-    >
+    <section v-if="status === 'loading'" class="detail-loading" aria-busy="true"
+      aria-label="Veranstaltung wird geladen">
       <p role="status">
         Veranstaltungsdetails werden geladen ...
       </p>
 
-      <div
-        class="detail-skeleton detail-skeleton--hero"
-        aria-hidden="true"
-      ></div>
+      <div class="detail-skeleton detail-skeleton--hero" aria-hidden="true"></div>
 
       <div class="detail-grid" aria-hidden="true">
         <div class="detail-skeleton detail-skeleton--content"></div>
@@ -192,14 +188,10 @@ const endTime = computed(() =>
     </section>
 
     <!-- EVENT NICHT GEFUNDEN ODER ID UNGÜLTIG -->
-    <section
-      v-else-if="
-        status === 'not-found' ||
-        status === 'invalid-id'
-      "
-      class="detail-state"
-      role="status"
-    >
+    <section v-else-if="
+      status === 'not-found' ||
+      status === 'invalid-id'
+    " class="detail-state" role="status">
       <span class="detail-state__icon" aria-hidden="true">
         🔎
       </span>
@@ -227,11 +219,7 @@ const endTime = computed(() =>
     </section>
 
     <!-- FEHLERZUSTAND -->
-    <section
-      v-else-if="status === 'error'"
-      class="detail-state"
-      role="alert"
-    >
+    <section v-else-if="status === 'error'" class="detail-state" role="alert">
       <span class="detail-state__icon" aria-hidden="true">
         ⚠️
       </span>
@@ -240,11 +228,7 @@ const endTime = computed(() =>
 
       <p>{{ errorMessage }}</p>
 
-      <button
-        type="button"
-        class="button button-primary"
-        @click="retryLoad"
-      >
+      <button type="button" class="button button-primary" @click="retryLoad">
         Erneut versuchen
       </button>
     </section>
@@ -253,18 +237,12 @@ const endTime = computed(() =>
     <template v-else-if="event">
 
       <!-- Event-Hero -->
-      <section
-        class="detail-hero"
-        :class="`detail-hero--${design.theme}`"
-      >
+      <section class="detail-hero" :class="`detail-hero--${design.theme}`">
         <span class="detail-hero__label">
           CAMPUSEVENT · {{ event.category.name }}
         </span>
 
-        <span
-          class="detail-hero__icon"
-          aria-hidden="true"
-        >
+        <span class="detail-hero__icon" aria-hidden="true">
           {{ design.icon }}
         </span>
 
@@ -296,10 +274,7 @@ const endTime = computed(() =>
             <h3>Veranstalter</h3>
 
             <div class="detail-organizer__profile">
-              <div
-                class="detail-organizer__avatar"
-                aria-hidden="true"
-              >
+              <div class="detail-organizer__avatar" aria-hidden="true">
                 {{ event.organizer.name.charAt(0).toUpperCase() }}
               </div>
 
@@ -383,23 +358,13 @@ const endTime = computed(() =>
 
             </dl>
           </div>
-
-          <!-- Anmeldung wird später implementiert -->
-          <div class="detail-registration">
-            <h3>Du möchtest teilnehmen?</h3>
-
-            <p>
-              Die Anmeldung zu Veranstaltungen
-              wird in einer späteren Projektphase
-              verfügbar sein.
-            </p>
-          </div>
-
         </aside>
 
       </div>
 
     </template>
+
+    <EventRegistrationPanel v-if="event && event.status === 'published'" :key="event.id" :event-id="event.id" />
 
   </div>
 </template>
@@ -587,7 +552,7 @@ const endTime = computed(() =>
   font-weight: 800;
 }
 
-.detail-organizer__profile > div:last-child {
+.detail-organizer__profile>div:last-child {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -710,19 +675,17 @@ const endTime = computed(() =>
 }
 
 /* Skeleton Loading */
-.detail-loading > p {
+.detail-loading>p {
   color: #64748b;
   margin-bottom: 16px;
 }
 
 .detail-skeleton {
   border-radius: 18px;
-  background: linear-gradient(
-    90deg,
-    #e2e8f0 25%,
-    #f1f5f9 50%,
-    #e2e8f0 75%
-  );
+  background: linear-gradient(90deg,
+      #e2e8f0 25%,
+      #f1f5f9 50%,
+      #e2e8f0 75%);
   background-size: 200% 100%;
   animation: detail-shimmer 1.5s infinite;
 }
@@ -744,6 +707,7 @@ const endTime = computed(() =>
   from {
     background-position: 200% 0;
   }
+
   to {
     background-position: -200% 0;
   }
