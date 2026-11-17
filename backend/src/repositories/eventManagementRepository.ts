@@ -33,7 +33,7 @@ export interface ManagedEvent {
 }
 
 // Interne Datenbankstruktur
-interface EventRow {
+export interface EventRow {
   id: string
   title: string
   description: string
@@ -52,7 +52,7 @@ interface EventRow {
 }
 
 // Datenbankzeile in öffentliches API-Format umwandeln
-function mapEvent(row: EventRow): ManagedEvent {
+export function mapEvent(row: EventRow): ManagedEvent {
   return {
     id: row.id,
     title: row.title,
