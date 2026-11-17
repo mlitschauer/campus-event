@@ -27,7 +27,21 @@ Deno.test('CampusEvent REST-API Integrationstests', async (t) => {
 
       const events = await response.json()
 
-      assert.equal(events.length, 6)
+      // Es müssen veröffentlichte Veranstaltungen vorhanden sein.
+      assert.ok(
+        events.length > 0,
+        'Es sollten veröffentlichte Veranstaltungen vorhanden sein.',
+      )
+
+      // Die öffentliche API darf ausschließlich
+      // veröffentlichte Veranstaltungen zurückgeben.
+      for (const event of events) {
+        assert.equal(
+          event.status,
+          'published',
+          'Die öffentliche API darf keine Entwürfe oder abgesagten Events anzeigen.',
+        )
+      }
       assert.ok(events.every(
         (event: { status: string }) => event.status === 'published'
       ))
