@@ -65,11 +65,7 @@ async function handleLogout(): Promise<void> {
     <div class="container header-inner">
 
       <!-- Logo -->
-      <RouterLink
-        to="/"
-        class="brand"
-        aria-label="CampusEvent – Startseite"
-      >
+      <RouterLink to="/" class="brand" aria-label="CampusEvent – Startseite">
         <span class="brand-mark">C</span>
 
         <span>
@@ -78,28 +74,21 @@ async function handleLogout(): Promise<void> {
       </RouterLink>
 
       <!-- Hauptnavigation -->
-      <nav
-        class="primary-nav"
-        aria-label="Hauptnavigation"
-      >
+      <nav class="primary-nav" aria-label="Hauptnavigation">
         <RouterLink to="/" class="nav-link">
           Startseite
         </RouterLink>
 
-        <RouterLink
-          to="/events"
-          class="nav-link"
-          :class="{ active: isEventsArea }"
-        >
+        <RouterLink to="/events" class="nav-link" :class="{ active: isEventsArea }">
           Veranstaltungen
         </RouterLink>
 
-        <RouterLink
-          v-if="user"
-          to="/account"
-          class="nav-link"
-        >
+        <RouterLink v-if="user" to="/account" class="nav-link">
           Mein Konto
+        </RouterLink>
+
+        <RouterLink v-if="user?.role === 'organizer'" to="/organizer" class="nav-link">
+          Veranstalterbereich
         </RouterLink>
       </nav>
 
@@ -107,11 +96,7 @@ async function handleLogout(): Promise<void> {
       <div class="header-actions">
 
         <!-- Session wird überprüft -->
-        <span
-          v-if="status === 'idle' || status === 'loading'"
-          class="header-status"
-          role="status"
-        >
+        <span v-if="status === 'idle' || status === 'loading'" class="header-status" role="status">
           Session wird geprüft ...
         </span>
 
@@ -122,12 +107,7 @@ async function handleLogout(): Promise<void> {
             {{ user.name }}
           </span>
 
-          <button
-            type="button"
-            class="button button-outline"
-            :disabled="loggingOut"
-            @click="handleLogout"
-          >
+          <button type="button" class="button button-outline" :disabled="loggingOut" @click="handleLogout">
             {{
               loggingOut
                 ? 'Abmelden ...'
@@ -138,22 +118,14 @@ async function handleLogout(): Promise<void> {
         </template>
 
         <!-- Gast -->
-        <RouterLink
-          v-else
-          to="/login"
-          class="button button-primary header-login"
-        >
+        <RouterLink v-else to="/login" class="button button-primary header-login">
           Anmelden
         </RouterLink>
 
       </div>
     </div>
 
-    <div
-      v-if="logoutError"
-      class="container header-error"
-      role="alert"
-    >
+    <div v-if="logoutError" class="container header-error" role="alert">
       {{ logoutError }}
     </div>
 

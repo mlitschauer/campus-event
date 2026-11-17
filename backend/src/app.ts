@@ -8,6 +8,10 @@ import {
   registerEventManagementRoutes,
 } from './routes/eventManagementRoutes.ts'
 
+import {
+  registerOrganizerRoutes,
+} from './routes/organizerRoutes.ts'
+
 // Hono-Anwendung erstellen
 export const app = new Hono()
 
@@ -29,6 +33,7 @@ registerEventRoutes(app)
 registerCategoryRoutes(app)
 registerAuthRoutes(app)
 registerEventManagementRoutes(app)
+registerOrganizerRoutes(app)
 
 // Einheitliche Antwort bei unbekannter Route
 app.notFound((c) => {

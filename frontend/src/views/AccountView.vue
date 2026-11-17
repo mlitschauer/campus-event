@@ -61,10 +61,7 @@ const roleLabel = computed(() => {
           und persönlichen Funktionen angezeigt.
         </p>
 
-        <RouterLink
-          to="/events"
-          class="button button-primary"
-        >
+        <RouterLink to="/events" class="button button-primary">
           Veranstaltungen entdecken
         </RouterLink>
       </section>
@@ -74,6 +71,10 @@ const roleLabel = computed(() => {
     <p v-else role="status">
       Benutzerinformationen werden geladen ...
     </p>
+
+    <RouterLink v-if="user?.role === 'organizer'" to="/organizer" class="button button-primary">
+      Meine Veranstaltungen verwalten
+    </RouterLink>
 
   </div>
 </template>

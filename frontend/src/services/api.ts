@@ -38,7 +38,7 @@ export class ApiError extends Error {
 // Gemeinsame HTTP- und JSON-Verarbeitung
 async function requestJson<T>(
   path: string,
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   body?: unknown,
 ): Promise<T> {
   let response: Response
@@ -84,6 +84,11 @@ async function requestJson<T>(
     )
   }
 
+  // HTTP 204 enthält absichtlich keinen JSON-Body.
+if (response.status === 204) {
+  return undefined as T
+}
+
   // Erfolgreiche JSON-Antwort verarbeiten
   try {
     return (await response.json()) as T
@@ -107,4 +112,11 @@ export function postJson<T>(
   body?: unknown,
 ): Promise<T> {
   return requestJson<T>(path, 'POST', body)
+}
+
+// DELETE-Anfragen ohne erwarteten Response-Body
+export function deleteNoContent(
+  path: string,
+): Promise<void> {
+  return requestJson<void>(path, 'DELETE')
 }

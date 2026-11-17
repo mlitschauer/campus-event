@@ -48,6 +48,19 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/organizer',
+    name: 'organizer-dashboard',
+
+    component: () =>
+      import('../views/OrganizerDashboardView.vue'),
+
+    meta: {
+      title: 'Veranstalter-Dashboard',
+      requiresAuth: true,
+      requiresRole: 'organizer',
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('../views/NotFoundView.vue'),
@@ -66,21 +79,33 @@ const router = createRouter({
 
 // Geschützte Routen überprüfen
 router.beforeEach(async (to) => {
+  // Öffentliche Routen benötigen keine Authentifizierung
   if (!to.meta.requiresAuth) {
     return true
   }
 
   const auth = useAuth()
 
-  // Session aus dem Cookie wiederherstellen
+  // Session prüfen bzw. wiederherstellen
   await auth.initializeAuth()
 
+  // Gast -> Login
   if (!auth.isAuthenticated.value) {
     return {
       name: 'login',
       query: {
         redirect: to.fullPath,
       },
+    }
+  }
+
+  // Organizer-Routen benötigen zusätzlich die Rolle
+  if (
+    to.meta.requiresRole === 'organizer' &&
+    auth.user.value?.role !== 'organizer'
+  ) {
+    return {
+      name: 'account',
     }
   }
 

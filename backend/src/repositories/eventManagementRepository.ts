@@ -309,3 +309,42 @@ export async function cancelPublishedEvent(
 
   return rows.length === 1
 }
+
+// Alle Veranstaltungen eines Organizers laden.
+// Einschließlich Entwürfen und abgesagten Events.
+export async function findEventsByOrganizer(
+  organizerId: string,
+): Promise<ManagedEvent[]> {
+  const rows = await sql<EventRow[]>`
+    SELECT
+      e.id,
+      e.title,
+      e.description,
+      e.location,
+      e.starts_at,
+      e.ends_at,
+      e.capacity,
+      e.status,
+
+      u.id AS organizer_id,
+      u.name AS organizer_name,
+
+      c.id AS category_id,
+      c.name AS category_name,
+      c.slug AS category_slug
+
+    FROM events e
+
+    JOIN users u
+      ON e.organizer_id = u.id
+
+    JOIN categories c
+      ON e.category_id = c.id
+
+    WHERE e.organizer_id = ${organizerId}::uuid
+
+    ORDER BY e.created_at DESC, e.id DESC
+  `
+
+  return rows.map(mapEvent)
+}
