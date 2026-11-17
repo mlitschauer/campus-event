@@ -112,6 +112,8 @@ const filteredRegistrations = computed(() => {
 
 // Persönliche Anmeldungen laden
 async function loadRegistrations(): Promise<void> {
+  if (user.value?.role !== 'student') return
+
   const version = ++requestVersion
 
   loading.value = true
@@ -143,19 +145,23 @@ async function loadRegistrations(): Promise<void> {
 // Sessionwechsel berücksichtigen.
 // Bei einem Logout keine alten persönlichen Daten stehen lassen.
 watch(
-  () => user.value?.id ?? null,
-  (userId, previousUserId) => {
+  [() => user.value?.id ?? null, () => user.value?.role ?? null],
+  ([userId, role], [previousUserId]) => {
     ++requestVersion
     ++actionVersion
 
     registrations.value = []
     busyEventId.value = null
+    loadError.value = ''
+    loading.value = false
 
     actionError.value = ''
     actionSuccess.value = ''
 
-    if (userId) {
+    if (userId && role === 'student') {
       void loadRegistrations()
+    } else if (userId) {
+      void router.replace({ name: 'account' })
     } else if (previousUserId) {
       void router.replace({
         name: 'login',
@@ -177,6 +183,7 @@ async function removeRegistration(
 ): Promise<void> {
   if (
     busyEventId.value !== null ||
+    user.value?.role !== 'student' ||
     !canUnregister(registration)
   ) {
     return

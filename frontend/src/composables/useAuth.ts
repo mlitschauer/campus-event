@@ -35,6 +35,7 @@ const isAuthenticated = computed(() => user.value !== null)
 
 // Verhindert doppelte gleichzeitige Session-Abfragen
 let sessionRequest: Promise<void> | null = null
+let sessionVersion = 0
 
 // Session anhand des HttpOnly-Cookies überprüfen
 function refreshAuth(): Promise<void> {
@@ -42,16 +43,21 @@ function refreshAuth(): Promise<void> {
     return sessionRequest
   }
 
+  const version = ++sessionVersion
   status.value = 'loading'
 
   sessionRequest = (async () => {
     try {
       const response = await getCurrentUser()
 
+      if (version !== sessionVersion) return
+
       user.value = response.user
       status.value = 'authenticated'
 
     } catch (error) {
+      if (version !== sessionVersion) return
+
       user.value = null
 
       if (
@@ -66,7 +72,9 @@ function refreshAuth(): Promise<void> {
       }
     }
   })().finally(() => {
-    sessionRequest = null
+    if (version === sessionVersion) {
+      sessionRequest = null
+    }
   })
 
   return sessionRequest
@@ -106,6 +114,10 @@ async function login(
 
   const response = await loginWithPassword(input)
 
+  // Antworten früherer Session-Abfragen dürfen diesen Login nicht überschreiben.
+  ++sessionVersion
+  sessionRequest = null
+
   user.value = response.user
   status.value = 'authenticated'
 
@@ -115,6 +127,10 @@ async function login(
 // Logout
 async function logout(): Promise<void> {
   await logoutCurrentUser()
+
+  // Auch noch laufende Session-Abfragen gehören jetzt zum alten Kontext.
+  ++sessionVersion
+  sessionRequest = null
 
   // Erst nach bestätigtem serverseitigem Logout
   // den lokalen Benutzerzustand zurücksetzen.

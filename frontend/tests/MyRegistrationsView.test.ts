@@ -225,7 +225,7 @@ describe('CE-27: MyRegistrationsView', () => {
         expect(getMyRegistrations).toHaveBeenCalledTimes(loadCalls)
         if (change !== 'unmount') {
             expect(wrapper.find('.my-reg-message').exists()).toBe(false)
-            if (change === 'logout') {
+            if (change === 'logout' || change === 'role') {
                 expect(wrapper.find('.my-reg-card').exists()).toBe(false)
             } else {
                 // Auch dieselbe Anmeldung des neuen Benutzers muss erhalten bleiben.
@@ -275,6 +275,21 @@ describe('CE-27: MyRegistrationsView', () => {
         expect(wrapper.findAll('.my-reg-card')).toHaveLength(1)
         expect(wrapper.get('button.my-reg-danger-button').element.disabled).toBe(false)
         expect(wrapper.get('.my-reg-message--success').text()).toContain('wurde zurückgezogen')
+        wrapper.unmount()
+    })
+
+    it('verwirft eine laufende persönliche Liste nach Rollenverlust', async () => {
+        const user = mockStudentAuth()
+        const pending = deferred<MyRegistration[]>()
+        vi.mocked(getMyRegistrations).mockReturnValue(pending.promise)
+        const wrapper = renderView()
+        user.value = { id: 'student-1', role: 'organizer' }
+        await nextTick()
+        pending.resolve([testRegistration('Private Anmeldung')])
+        await flushPromises()
+        expect(wrapper.find('.my-reg-card').exists()).toBe(false)
+        expect((wrapper.vm as unknown as { registrations: MyRegistration[] }).registrations).toEqual([])
+        expect(getMyRegistrations).toHaveBeenCalledTimes(1)
         wrapper.unmount()
     })
 
