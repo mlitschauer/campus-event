@@ -12,6 +12,10 @@ import {
   registerOrganizerRoutes,
 } from './routes/organizerRoutes.ts'
 
+import {
+  registerRegistrationRoutes,
+} from './routes/registrationRoutes.ts'
+
 // Hono-Anwendung erstellen
 export const app = new Hono()
 
@@ -26,14 +30,10 @@ app.get('/api/health', (c) => {
 // REST-Routen registrieren
 registerEventRoutes(app)
 registerCategoryRoutes(app)
-registerEventRoutes(app)
-registerCategoryRoutes(app)
-registerAuthRoutes(app)
-registerEventRoutes(app)
-registerCategoryRoutes(app)
 registerAuthRoutes(app)
 registerEventManagementRoutes(app)
 registerOrganizerRoutes(app)
+registerRegistrationRoutes(app)
 
 // Einheitliche Antwort bei unbekannter Route
 app.notFound((c) => {
