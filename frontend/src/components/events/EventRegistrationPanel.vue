@@ -51,6 +51,7 @@ const busy = ref<'register' | 'unregister' | null>(null)
 
 // Veraltete Antworten nach Event- oder Benutzerwechsel ignorieren
 let requestVersion = 0
+let actionVersion = 0
 
 async function loadStatus(): Promise<void> {
   const version = ++requestVersion
@@ -107,6 +108,9 @@ watch(
   ],
   () => {
     ++requestVersion
+    ++actionVersion
+
+    busy.value = null
 
     availability.value = null
     personalStatus.value = null
@@ -135,6 +139,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   ++requestVersion
+  ++actionVersion
 })
 
 // Aktuellen Belegungsgrad berechnen
@@ -157,7 +162,7 @@ const occupancyPercent = computed(() => {
 async function performAction(
   action: 'register' | 'unregister',
 ): Promise<void> {
-  if (busy.value || !isStudent.value || loading.value) {
+  if (busy.value !== null || !isStudent.value || loading.value) {
     return
   }
 
@@ -184,27 +189,40 @@ async function performAction(
     return
   }
 
+  const currentAction = ++actionVersion
+  const currentEventId = props.eventId
+  const currentUserId = user.value?.id
+
+  const isStillCurrent = (): boolean =>
+    currentAction === actionVersion &&
+    props.eventId === currentEventId &&
+    user.value?.id === currentUserId &&
+    isStudent.value
+
   busy.value = action
   actionError.value = ''
   actionSuccess.value = ''
 
   try {
     if (action === 'register') {
-      await registerForEvent(props.eventId)
-
-      actionSuccess.value =
-        'Du bist erfolgreich für diese Veranstaltung angemeldet.'
+      await registerForEvent(currentEventId)
     } else {
-      await unregisterFromEvent(props.eventId)
-
-      actionSuccess.value =
-        'Deine Anmeldung wurde erfolgreich zurückgezogen.'
+      await unregisterFromEvent(currentEventId)
     }
+
+    if (!isStillCurrent()) return
+
+    actionSuccess.value =
+      action === 'register'
+        ? 'Du bist erfolgreich für diese Veranstaltung angemeldet.'
+        : 'Deine Anmeldung wurde erfolgreich zurückgezogen.'
 
     // Serverdaten neu laden statt Belegungszahlen selbst zu schätzen.
     await loadStatus()
 
   } catch (error) {
+    if (!isStillCurrent()) return
+
     actionError.value =
       error instanceof ApiError
         ? error.message
@@ -214,7 +232,9 @@ async function performAction(
     // die tatsächliche Belegung erneut abrufen.
     await loadStatus()
   } finally {
-    busy.value = null
+    if (currentAction === actionVersion) {
+      busy.value = null
+    }
   }
 }
 </script>

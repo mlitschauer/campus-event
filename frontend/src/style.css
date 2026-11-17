@@ -339,6 +339,11 @@ p {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  /* Ein mehrzeiliger Header darf den Tastaturfokus nicht verdecken. */
+  .site-header {
+    position: static;
+  }
+
   .header-inner {
     flex-wrap: wrap;
     gap: 12px;
@@ -348,7 +353,8 @@ p {
   .primary-nav {
     order: 3;
     width: 100%;
-    gap: 24px;
+    flex-wrap: wrap;
+    gap: 8px 24px;
   }
 
   .hero {

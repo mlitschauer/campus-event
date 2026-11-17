@@ -41,6 +41,7 @@ const selectedFilter = ref<RegistrationFilter>('all')
 const busyEventId = ref<string | null>(null)
 
 let requestVersion = 0
+let actionVersion = 0
 
 const filters: Array<{
   value: RegistrationFilter
@@ -125,6 +126,9 @@ async function loadRegistrations(): Promise<void> {
   } catch (error) {
     if (version !== requestVersion) return
 
+    // Bei fehlgeschlagenem Abruf keine veralteten persönlichen Daten behalten.
+    registrations.value = []
+
     loadError.value =
       error instanceof ApiError
         ? error.message
@@ -142,7 +146,10 @@ watch(
   () => user.value?.id ?? null,
   (userId, previousUserId) => {
     ++requestVersion
+    ++actionVersion
+
     registrations.value = []
+    busyEventId.value = null
 
     actionError.value = ''
     actionSuccess.value = ''
@@ -161,6 +168,7 @@ watch(
 
 onUnmounted(() => {
   ++requestVersion
+  ++actionVersion
 })
 
 // Eigene Anmeldung zurückziehen
@@ -181,12 +189,24 @@ async function removeRegistration(
 
   if (!confirmed) return
 
-  busyEventId.value = registration.event.id
+  const currentAction = ++actionVersion
+  const currentUserId = user.value?.id
+  const eventId = registration.event.id
+
+  const isStillCurrent = (): boolean =>
+    currentAction === actionVersion &&
+    user.value?.id === currentUserId &&
+    user.value?.role === 'student'
+
+  busyEventId.value = eventId
   actionError.value = ''
   actionSuccess.value = ''
 
   try {
-    await unregisterFromEvent(registration.event.id)
+    await unregisterFromEvent(eventId)
+
+    // Ergebnis einer alten Session ignorieren.
+    if (!isStillCurrent()) return
 
     // Registrierung unmittelbar aus der Liste entfernen.
     registrations.value = registrations.value.filter(
@@ -197,6 +217,8 @@ async function removeRegistration(
       `Deine Anmeldung für "${registration.event.title}" ` +
       'wurde zurückgezogen.'
   } catch (error) {
+    if (!isStillCurrent()) return
+
     actionError.value =
       error instanceof ApiError
         ? error.message
@@ -205,7 +227,9 @@ async function removeRegistration(
     // Der Serverzustand ist maßgeblich.
     await loadRegistrations()
   } finally {
-    busyEventId.value = null
+    if (currentAction === actionVersion) {
+      busyEventId.value = null
+    }
   }
 }
 </script>
