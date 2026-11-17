@@ -38,7 +38,7 @@ export class ApiError extends Error {
 // Gemeinsame HTTP- und JSON-Verarbeitung
 async function requestJson<T>(
   path: string,
-  method: 'GET' | 'POST' | 'DELETE',
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   body?: unknown,
 ): Promise<T> {
   let response: Response
@@ -119,4 +119,16 @@ export function deleteNoContent(
   path: string,
 ): Promise<void> {
   return requestJson<void>(path, 'DELETE')
+}
+
+// PATCH-Anfragen mit JSON-Body
+export function patchJson<T>(
+  path: string,
+  body: unknown,
+): Promise<T> {
+  return requestJson<T>(
+    path,
+    'PATCH',
+    body,
+  )
 }

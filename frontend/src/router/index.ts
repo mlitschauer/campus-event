@@ -66,6 +66,33 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/NotFoundView.vue'),
     meta: { title: 'Seite nicht gefunden' },
   },
+
+  {
+  path: '/organizer/events/new',
+  name: 'organizer-event-new',
+
+  component: () =>
+    import('../views/OrganizerEventFormView.vue'),
+
+  meta: {
+    title: 'Neue Veranstaltung',
+    requiresAuth: true,
+    requiresRole: 'organizer',
+  },
+},
+{
+  path: '/organizer/events/:id/edit',
+  name: 'organizer-event-edit',
+
+  component: () =>
+    import('../views/OrganizerEventFormView.vue'),
+
+  meta: {
+    title: 'Veranstaltung bearbeiten',
+    requiresAuth: true,
+    requiresRole: 'organizer',
+  },
+},
 ]
 
 const router = createRouter({

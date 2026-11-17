@@ -43,11 +43,11 @@ const filterOptions: Array<{
   value: StatusFilter
   label: string
 }> = [
-  { value: 'all', label: 'Alle' },
-  { value: 'draft', label: 'Entwürfe' },
-  { value: 'published', label: 'Veröffentlicht' },
-  { value: 'cancelled', label: 'Abgesagt' },
-]
+    { value: 'all', label: 'Alle' },
+    { value: 'draft', label: 'Entwürfe' },
+    { value: 'published', label: 'Veröffentlicht' },
+    { value: 'cancelled', label: 'Abgesagt' },
+  ]
 
 // Dashboard-Kennzahlen
 const counts = computed(() => ({
@@ -234,22 +234,18 @@ onUnmounted(() => {
         Behalte deine Events im Blick und verwalte
         Veröffentlichungen und Absagen.
       </p>
+
+      <RouterLink :to="{ name: 'organizer-event-new' }" class="button button-primary dashboard-create-link">
+        + Neue Veranstaltung
+      </RouterLink>
     </section>
 
     <!-- Feedback für Verwaltungsaktionen -->
-    <p
-      v-if="actionSuccess"
-      class="dashboard-message dashboard-message--success"
-      role="status"
-    >
+    <p v-if="actionSuccess" class="dashboard-message dashboard-message--success" role="status">
       {{ actionSuccess }}
     </p>
 
-    <p
-      v-if="actionError"
-      class="dashboard-message dashboard-message--error"
-      role="alert"
-    >
+    <p v-if="actionError" class="dashboard-message dashboard-message--error" role="alert">
       {{ actionError }}
     </p>
 
@@ -258,20 +254,12 @@ onUnmounted(() => {
       <p role="status">Dashboard wird geladen ...</p>
 
       <div class="dashboard-skeletons" aria-hidden="true">
-        <div
-          v-for="index in 3"
-          :key="index"
-          class="dashboard-skeleton"
-        ></div>
+        <div v-for="index in 3" :key="index" class="dashboard-skeleton"></div>
       </div>
     </section>
 
     <!-- Fehler beim Laden -->
-    <section
-      v-else-if="errorMessage"
-      class="dashboard-state"
-      role="alert"
-    >
+    <section v-else-if="errorMessage" class="dashboard-state" role="alert">
       <span class="dashboard-state__icon" aria-hidden="true">
         ⚠️
       </span>
@@ -280,11 +268,7 @@ onUnmounted(() => {
 
       <p>{{ errorMessage }}</p>
 
-      <button
-        type="button"
-        class="button button-primary"
-        @click="loadEvents"
-      >
+      <button type="button" class="button button-primary" @click="loadEvents">
         Erneut versuchen
       </button>
     </section>
@@ -292,10 +276,7 @@ onUnmounted(() => {
     <template v-else>
 
       <!-- Dashboard-Kennzahlen -->
-      <section
-        class="dashboard-stats"
-        aria-label="Veranstaltungsstatistik"
-      >
+      <section class="dashboard-stats" aria-label="Veranstaltungsstatistik">
         <div class="dashboard-stat">
           <span>📝 Entwürfe</span>
           <strong>{{ counts.draft }}</strong>
@@ -327,18 +308,10 @@ onUnmounted(() => {
         </div>
 
         <div class="dashboard-filters">
-          <button
-            v-for="filter in filterOptions"
-            :key="filter.value"
-            type="button"
-            class="dashboard-filter"
-            :class="{
-              'dashboard-filter--active':
-                selectedFilter === filter.value
-            }"
-            :aria-pressed="selectedFilter === filter.value"
-            @click="selectedFilter = filter.value"
-          >
+          <button v-for="filter in filterOptions" :key="filter.value" type="button" class="dashboard-filter" :class="{
+            'dashboard-filter--active':
+              selectedFilter === filter.value
+          }" :aria-pressed="selectedFilter === filter.value" @click="selectedFilter = filter.value">
             {{ filter.label }}
             <span>{{ counts[filter.value] }}</span>
           </button>
@@ -347,10 +320,7 @@ onUnmounted(() => {
       </section>
 
       <!-- Noch keine Events -->
-      <section
-        v-if="events.length === 0"
-        class="dashboard-state"
-      >
+      <section v-if="events.length === 0" class="dashboard-state">
         <span class="dashboard-state__icon" aria-hidden="true">
           📅
         </span>
@@ -369,10 +339,7 @@ onUnmounted(() => {
       </section>
 
       <!-- Keine Ergebnisse im gewählten Statusfilter -->
-      <section
-        v-else-if="filteredEvents.length === 0"
-        class="dashboard-state"
-      >
+      <section v-else-if="filteredEvents.length === 0" class="dashboard-state">
         <span class="dashboard-state__icon" aria-hidden="true">
           🔎
         </span>
@@ -384,27 +351,15 @@ onUnmounted(() => {
           mit diesem Status.
         </p>
 
-        <button
-          type="button"
-          class="button button-secondary"
-          @click="selectedFilter = 'all'"
-        >
+        <button type="button" class="button button-secondary" @click="selectedFilter = 'all'">
           Alle Veranstaltungen anzeigen
         </button>
       </section>
 
       <!-- Eigene Eventliste -->
-      <section
-        v-else
-        class="dashboard-event-list"
-        aria-label="Meine Veranstaltungen"
-      >
+      <section v-else class="dashboard-event-list" aria-label="Meine Veranstaltungen">
 
-        <article
-          v-for="event in filteredEvents"
-          :key="event.id"
-          class="dashboard-event"
-        >
+        <article v-for="event in filteredEvents" :key="event.id" class="dashboard-event">
           <div class="dashboard-event__header">
 
             <div>
@@ -415,10 +370,7 @@ onUnmounted(() => {
               <h3>{{ event.title }}</h3>
             </div>
 
-            <span
-              class="dashboard-status"
-              :class="`dashboard-status--${event.status}`"
-            >
+            <span class="dashboard-status" :class="`dashboard-status--${event.status}`">
               {{ statusLabel(event.status) }}
             </span>
 
@@ -447,13 +399,8 @@ onUnmounted(() => {
           <div class="dashboard-event__actions">
 
             <!-- Entwurf veröffentlichen -->
-            <button
-              v-if="event.status === 'draft'"
-              type="button"
-              class="button button-primary"
-              :disabled="busyEventId !== null"
-              @click="performAction(event, 'publish')"
-            >
+            <button v-if="event.status === 'draft'" type="button" class="button button-primary"
+              :disabled="busyEventId !== null" @click="performAction(event, 'publish')">
               {{
                 busyEventId === event.id
                   ? 'Bitte warten ...'
@@ -462,36 +409,22 @@ onUnmounted(() => {
             </button>
 
             <!-- Entwurf endgültig löschen -->
-            <button
-              v-if="event.status === 'draft'"
-              type="button"
-              class="dashboard-danger-button"
-              :disabled="busyEventId !== null"
-              @click="performAction(event, 'delete')"
-            >
+            <button v-if="event.status === 'draft'" type="button" class="dashboard-danger-button"
+              :disabled="busyEventId !== null" @click="performAction(event, 'delete')">
               Entwurf löschen
             </button>
 
             <!-- Veröffentlichtes Event ansehen -->
-            <RouterLink
-              v-if="event.status === 'published'"
-              :to="{
-                name: 'event-detail',
-                params: { id: event.id },
-              }"
-              class="button button-secondary"
-            >
+            <RouterLink v-if="event.status === 'published'" :to="{
+              name: 'event-detail',
+              params: { id: event.id },
+            }" class="button button-secondary">
               Öffentlich ansehen
             </RouterLink>
 
             <!-- Veröffentlichtes Event absagen -->
-            <button
-              v-if="event.status === 'published'"
-              type="button"
-              class="dashboard-danger-button"
-              :disabled="busyEventId !== null"
-              @click="performAction(event, 'cancel')"
-            >
+            <button v-if="event.status === 'published'" type="button" class="dashboard-danger-button"
+              :disabled="busyEventId !== null" @click="performAction(event, 'cancel')">
               {{
                 busyEventId === event.id
                   ? 'Bitte warten ...'
@@ -500,13 +433,17 @@ onUnmounted(() => {
             </button>
 
             <!-- Bereits abgesagtes Event -->
-            <span
-              v-if="event.status === 'cancelled'"
-              class="dashboard-cancelled-note"
-            >
+            <span v-if="event.status === 'cancelled'" class="dashboard-cancelled-note">
               Diese Veranstaltung wurde abgesagt.
             </span>
 
+            <!-- Nur eigene Entwürfe können bearbeitet werden -->
+            <RouterLink v-if="event.status === 'draft'" :to="{
+              name: 'organizer-event-edit',
+              params: { id: event.id },
+            }" class="button button-secondary">
+              Bearbeiten
+            </RouterLink>
           </div>
         </article>
 
@@ -566,7 +503,7 @@ onUnmounted(() => {
   font-size: 23px;
 }
 
-.dashboard-filter-header > span {
+.dashboard-filter-header>span {
   color: #64748b;
   font-size: 13px;
 }
@@ -645,7 +582,7 @@ onUnmounted(() => {
   gap: 18px;
 }
 
-.dashboard-event__header > div {
+.dashboard-event__header>div {
   min-width: 0;
 }
 
@@ -812,12 +749,10 @@ onUnmounted(() => {
 .dashboard-skeleton {
   height: 125px;
   border-radius: 16px;
-  background: linear-gradient(
-    90deg,
-    #e2e8f0 25%,
-    #f1f5f9 50%,
-    #e2e8f0 75%
-  );
+  background: linear-gradient(90deg,
+      #e2e8f0 25%,
+      #f1f5f9 50%,
+      #e2e8f0 75%);
   background-size: 200% 100%;
   animation: dashboard-shimmer 1.5s infinite;
 }
@@ -826,6 +761,7 @@ onUnmounted(() => {
   from {
     background-position: 200% 0;
   }
+
   to {
     background-position: -200% 0;
   }
@@ -833,6 +769,7 @@ onUnmounted(() => {
 
 /* Tablet */
 @media (max-width: 850px) {
+
   .dashboard-stats,
   .dashboard-skeletons {
     gap: 12px;
@@ -845,6 +782,7 @@ onUnmounted(() => {
 
 /* Smartphone */
 @media (max-width: 620px) {
+
   .dashboard-stats,
   .dashboard-skeletons {
     grid-template-columns: 1fr;
@@ -885,6 +823,20 @@ onUnmounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .dashboard-skeleton {
     animation: none;
+  }
+}
+
+.dashboard-create-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  text-decoration: none;
+}
+
+@media (max-width: 620px) {
+  .dashboard-create-link {
+    width: 100%;
   }
 }
 </style>
