@@ -96,3 +96,6 @@ Backend-Integrationstests nur mit separater Testdatenbank samt Schema und benöt
 | `backend/main.ts`, `backend/src/` | HTTP-Start, Hono-Routen, Middleware, Schemas, Services, Repositories und DB-Client |
 | `backend/db/`, `compose.yaml` | Migration, Demo-Daten, PostgreSQL-Dienst und Volume |
 | `backend/tests/` | Deno-Tests mit Hono und PostgreSQL |
+
+## KI-Nutzung
+Künstliche Intelligenz (KI) wurde unterstützend bei der Arbeitsplanung, der Überarbeitung des CSS-Designs sowie bei der Optimierung, Verbesserung und Bereinigung des bestehenden Codes eingesetzt.
