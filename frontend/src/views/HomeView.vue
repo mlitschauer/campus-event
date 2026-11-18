@@ -91,6 +91,7 @@ const { user } = useAuth()
     "heading description"
     "actions .";
   column-gap: 64px;
+  row-gap: 48px;
   align-items: center;
   padding: 100px 0 110px;
 }
@@ -127,10 +128,6 @@ const { user } = useAuth()
 .hero-description {
   grid-area: description;
   align-self: center;
-}
-
-.hero-description h3 {
-  line-height: 1.75;
 }
 
 /* Hero Buttons */
@@ -206,6 +203,7 @@ const { user } = useAuth()
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
+  margin-top: 28px;
 }
 
 .feature-card {
@@ -253,6 +251,7 @@ const { user } = useAuth()
 
 .hero-description h3 {
   margin: 0;
+  line-height: 1.75;
 }
 
 /* Tablet */
@@ -269,6 +268,12 @@ const { user } = useAuth()
 
   .feature-card {
     padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    row-gap: 28px;
   }
 }
 
