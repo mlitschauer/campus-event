@@ -96,7 +96,3 @@ Backend-Integrationstests nur mit separater Testdatenbank samt Schema und benöt
 | `backend/main.ts`, `backend/src/` | HTTP-Start, Hono-Routen, Middleware, Schemas, Services, Repositories und DB-Client |
 | `backend/db/`, `compose.yaml` | Migration, Demo-Daten, PostgreSQL-Dienst und Volume |
 | `backend/tests/` | Deno-Tests mit Hono und PostgreSQL |
-
-## Bekannte Grenzen
-
-Der dokumentierte Betrieb ist lokal. Für öffentliche Bereitstellung fehlen ein verifizierter HTTPS-Betrieb und eine separat minimal berechtigte Datenbankrolle. Es gibt keine Warteliste, keine Organizer-Teilnehmerliste und keine Selbstverwaltung der Organizer-Rolle. Öffentliche Listen haben keine Pagination. Bei abgesagten Veranstaltungen bleiben bestehende Anmeldungen in der persönlichen Liste nachvollziehbar.
