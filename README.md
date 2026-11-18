@@ -96,11 +96,6 @@ Backend-Integrationstests nur mit separater Testdatenbank samt Schema und benöt
 | `backend/main.ts`, `backend/src/` | HTTP-Start, Hono-Routen, Middleware, Schemas, Services, Repositories und DB-Client |
 | `backend/db/`, `compose.yaml` | Migration, Demo-Daten, PostgreSQL-Dienst und Volume |
 | `backend/tests/` | Deno-Tests mit Hono und PostgreSQL |
-| `docs/`, `scripts/` | Technische Dokumentation, Prüfnachweise und CE-32-Hilfsskripte |
-
-- [Architektur und Persistenz](docs/CE-38-architektur.md)
-- [Projektabschluss, Entscheidungen und Prüfungswegweiser](docs/CE-38-projektabschluss.md)
-- [CE-31-Sicherheitsprüfung](docs/CE-31-pruefbericht.md) und [CE-32-E2E und Demo](docs/CE-32-end-to-end-und-live-demo.md)
 
 ## Bekannte Grenzen
 
