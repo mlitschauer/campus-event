@@ -1,6 +1,6 @@
 # CampusEvent
 
-CampusEvent ist eine lokale Veranstaltungsplattform für die DHBW Mosbach.
+CampusEvent ist eine Eventplattform für Hochschulen. Studierende finden Campusveranstaltungen und verwalten ihre Teilnahmen. Veranstalter pflegen und veröffentlichen ihre eigenen Veranstaltungen.
 
 | Zugriff | Funktionen |
 | --- | --- |
@@ -167,4 +167,5 @@ Backend-Integrationstests mit `deno task <Name>` im Ordner `backend/` ausführen
 | `backend/tests/` | Deno-Tests mit Hono und PostgreSQL |
 
 
-# KI-Nutzung
+## KI-Nutzung
+Künstliche Intelligenz (KI) wurde unterstützend bei der Arbeitsplanung, der Überarbeitung des CSS-Designs sowie bei der Optimierung, Verbesserung und Bereinigung des bestehenden Codes eingesetzt.
